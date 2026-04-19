@@ -12,21 +12,9 @@ which provides the `hid_set_num_input_buffers()` API.
 
 The sweep test is a single C99 source file.
 
-> **Windows users:** skip Steps 1 and 2 below. Easiest path is the
-> [`build_windows.bat`](build_windows.bat) helper in this repo — it does
-> arch detection, vcvars setup, git clone, cmake, and cl compile in one
-> script. From an empty directory, run:
->
-> ```bat
-> curl -LO https://raw.githubusercontent.com/auxcorelabs/hidapi-inputbuffer-sweep-test/main/build_windows.bat
-> build_windows.bat
-> ```
->
-> **Do not paste the block in [Step 2 → Windows](#windows-msvc--self-contained)
-> into an interactive `cmd.exe`** — cmd's paste buffer silently drops lines
-> while long-running commands (`cmake ..`) execute, leaving you stuck
-> mid-build. Save the block to a `.bat` file first, or just use
-> `build_windows.bat`.
+> **Windows users:** skip Steps 1 and 2 below and use
+> [`build_windows.bat`](build_windows.bat) — see
+> [Windows (MSVC)](#windows-msvc) for the one-liner.
 
 ### Step 1 — build hidapi from the auxcorelabs branch (macOS / Linux)
 
@@ -97,7 +85,7 @@ gcc -I hidapi-upstream/hidapi -o sweep_input_buffers hidapi_sweep_test.c \
 > local build directory. Without it the binary will fail at launch with
 > `Library not loaded: @rpath/libhidapi.0.dylib`.
 
-#### Windows (MSVC) — self-contained
+#### Windows (MSVC)
 
 Prerequisites:
 
@@ -105,55 +93,29 @@ Prerequisites:
   — provides `cl.exe`, `cmake`, and `vcvarsXX.bat`.
 - **Git for Windows** — puts `git` on the system PATH.
 
-The block below autodetects the host architecture from
-`%PROCESSOR_ARCHITECTURE%` and invokes the correct `vcvars*.bat` before
-running git → cmake → cl. Mixing, e.g. `vcvars64.bat` on an ARM64 host,
-produces a `LNK4272: library machine type 'ARM64' conflicts with target
-machine type 'x64'` error when linking against the hidapi lib cmake built
-for the host.
-
-Paste the block into a plain `cmd.exe`, run from any empty working
-directory. It will clone hidapi, build it, fetch/compile the sweep test,
-and leave `sweep_input_buffers.exe` + `hidapi.dll` next to each other.
+From an empty working directory, open `cmd.exe` and run:
 
 ```bat
-@echo off
-set VS_BUILD=C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build
-if /i "%PROCESSOR_ARCHITECTURE%"=="ARM64" (
-    call "%VS_BUILD%\vcvarsarm64.bat"
-) else (
-    call "%VS_BUILD%\vcvars64.bat"
-)
-
-REM Clone hidapi (skip if hidapi-upstream already exists)
-if not exist hidapi-upstream (
-    git clone -b feature/input-report-buffer-size ^
-        https://github.com/auxcorelabs/hidapi.git hidapi-upstream
-)
-
-REM Build hidapi. cmake picks the host arch from the active vcvars env.
-pushd hidapi-upstream
-if not exist build mkdir build
-cd build
-cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
-cmake --build . --config RelWithDebInfo
-popd
-
-REM Multi-config generators put the lib/dll under RelWithDebInfo\; fall back
-REM to the flat path for single-config generators (e.g. NMake Makefiles).
-set HIDLIB=hidapi-upstream\build\src\windows\RelWithDebInfo\hidapi.lib
-set HIDDLL=hidapi-upstream\build\src\windows\RelWithDebInfo\hidapi.dll
-if not exist "%HIDLIB%" set HIDLIB=hidapi-upstream\build\src\windows\hidapi.lib
-if not exist "%HIDDLL%" set HIDDLL=hidapi-upstream\build\src\windows\hidapi.dll
-
-REM Build the sweep test. hidapi_sweep_test.c must be in the current directory.
-cl.exe /nologo /I hidapi-upstream\hidapi ^
-    /Fe:sweep_input_buffers.exe ^
-    hidapi_sweep_test.c "%HIDLIB%"
-copy /Y "%HIDDLL%" . >nul
+curl -LO https://raw.githubusercontent.com/auxcorelabs/hidapi-inputbuffer-sweep-test/main/build_windows.bat
+build_windows.bat
 ```
 
-After the block finishes, launch the binary:
+`build_windows.bat` auto-detects the host architecture from
+`%PROCESSOR_ARCHITECTURE%` and calls `vcvarsarm64.bat` on ARM64 hosts or
+`vcvars64.bat` on x64 hosts (mixing them, e.g. `vcvars64.bat` on an ARM64
+host, produces a `LNK4272: library machine type 'ARM64' conflicts with
+target machine type 'x64'` link error). It then clones hidapi, runs cmake
+configure + build, downloads the sweep source, compiles
+`sweep_input_buffers.exe`, and copies `hidapi.dll` next to it. Each of the
+six steps prints a `[N/6]` progress marker.
+
+> **Why a `.bat` file and not a copy-paste block:** pasting multi-line
+> batch into an interactive `cmd.exe` is unreliable — cmd's paste buffer
+> silently drops queued lines while long-running commands (`cmake ..`,
+> `cmake --build`) execute, leaving you stuck mid-build. A script file
+> runs deterministically.
+
+After `build_windows.bat` finishes:
 
 ```bat
 sweep_input_buffers.exe 0 1025
