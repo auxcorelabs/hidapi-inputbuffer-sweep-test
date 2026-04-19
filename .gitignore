@@ -1,0 +1,15 @@
+# build outputs
+hidapi_sweep_test
+sweep_hidraw
+sweep_libusb
+*.exe
+*.obj
+*.o
+*.dylib
+*.so
+*.so.*
+# build dirs
+build/
+build_*/
+# hidapi source checkouts
+hidapi-upstream/
