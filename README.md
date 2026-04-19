@@ -12,10 +12,21 @@ which provides the `hid_set_num_input_buffers()` API.
 
 The sweep test is a single C99 source file.
 
-> **Windows users:** skip Steps 1 and 2 below and jump straight to
-> [Step 2 → Windows (MSVC) — self-contained](#windows-msvc--self-contained).
-> That block is fully standalone — it does arch detection, vcvars setup,
-> git clone, cmake, and cl compile in one paste.
+> **Windows users:** skip Steps 1 and 2 below. Easiest path is the
+> [`build_windows.bat`](build_windows.bat) helper in this repo — it does
+> arch detection, vcvars setup, git clone, cmake, and cl compile in one
+> script. From an empty directory, run:
+>
+> ```bat
+> curl -LO https://raw.githubusercontent.com/auxcorelabs/hidapi-inputbuffer-sweep-test/main/build_windows.bat
+> build_windows.bat
+> ```
+>
+> **Do not paste the block in [Step 2 → Windows](#windows-msvc--self-contained)
+> into an interactive `cmd.exe`** — cmd's paste buffer silently drops lines
+> while long-running commands (`cmake ..`) execute, leaving you stuck
+> mid-build. Save the block to a `.bat` file first, or just use
+> `build_windows.bat`.
 
 ### Step 1 — build hidapi from the auxcorelabs branch (macOS / Linux)
 
