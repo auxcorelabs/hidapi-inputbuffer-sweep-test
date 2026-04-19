@@ -59,7 +59,11 @@ against hidraw tells you nothing about real queue behavior.
 # from hanging the install on fresh or partially-upgraded systems.
 sudo DEBIAN_FRONTEND=noninteractive apt-get update
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    build-essential cmake pkg-config libusb-1.0-0-dev git
+    build-essential cmake pkg-config libusb-1.0-0-dev git curl
+
+# Fetch the sweep test source into the current working directory
+# (same directory that contains the hidapi-upstream/ tree from Step 1).
+curl -LO https://raw.githubusercontent.com/auxcorelabs/hidapi-inputbuffer-sweep-test/main/hidapi_sweep_test.c
 
 # Link against the libusb backend
 gcc -I hidapi-upstream/hidapi -o sweep_input_buffers hidapi_sweep_test.c \
@@ -74,6 +78,10 @@ gcc -I hidapi-upstream/hidapi -o sweep_input_buffers hidapi_sweep_test.c \
 #### macOS
 
 ```sh
+# Fetch the sweep test source into the current working directory
+# (same directory that contains the hidapi-upstream/ tree from Step 1).
+curl -LO https://raw.githubusercontent.com/auxcorelabs/hidapi-inputbuffer-sweep-test/main/hidapi_sweep_test.c
+
 gcc -I hidapi-upstream/hidapi -o sweep_input_buffers hidapi_sweep_test.c \
     hidapi-upstream/build/src/mac/libhidapi.dylib \
     -Wl,-rpath,@loader_path/hidapi-upstream/build/src/mac \
