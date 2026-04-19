@@ -206,6 +206,13 @@ int main(int argc, char **argv)
                 printf("Opened: vid=0x%04x pid=0x%04x product=%ls (auto-detected)\n",
                     list->vendor_id, list->product_id,
                     list->product_string ? list->product_string : L"?");
+            } else {
+                fprintf(stderr,
+                    "Could not open auto-detected device vid=0x%04x pid=0x%04x at path=%s\n"
+                    "  hint: on Linux HID access usually requires 'sudo' or a udev rule;\n"
+                    "        on macOS check the Input Monitoring permission.\n",
+                    list->vendor_id, list->product_id,
+                    list->path ? list->path : "(null)");
             }
             hid_free_enumeration(list);
         } else {
