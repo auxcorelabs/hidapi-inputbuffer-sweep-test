@@ -213,6 +213,8 @@ sweep_input_buffers.exe 0 1025
 
 Example output:
 
+**macOS (IOKit backend) / Linux (libusb backend)** — accepts `1..1024`:
+
 ```
 Opened: vid=0x05ac pid=0x027b product=Apple Internal Keyboard (auto-detected)
 Sweeping range [0, 1025] (1026 values)...
@@ -225,5 +227,20 @@ Results (compact ranges):
     1025                   -1
 ```
 
-A return code of `0` means the value was accepted by the backend; `-1` means
-it was rejected (either by hidapi's cap of 1024 or by the OS kernel).
+**Windows (`HidD_SetNumInputBuffers`)** — kernel-enforced `2..512`:
+
+```
+Opened: vid=0x203a pid=0xfffb product=Virtual Keyboard Interface (auto-detected)
+Sweeping range [0, 1025] (1026 values)...
+
+Results (compact ranges):
+  value_range             return_value
+  ----------------------  ------------
+       0 .. 1              -1
+       2 .. 512             0
+     513 .. 1025           -1
+```
+
+A return value of `0` means the value was accepted by the backend; `-1` means
+it was rejected (either by hidapi's cap of 1024 or by the OS kernel — Windows
+specifically rejects anything outside `[2, 512]`).
