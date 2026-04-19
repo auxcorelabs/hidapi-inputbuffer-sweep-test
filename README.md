@@ -12,6 +12,11 @@ which provides the `hid_set_num_input_buffers()` API.
 
 The sweep test is a single C99 source file.
 
+> **Windows users:** skip Steps 1 and 2 below and jump straight to
+> [Step 2 → Windows (MSVC) — self-contained](#windows-msvc--self-contained).
+> That block is fully standalone — it does arch detection, vcvars setup,
+> git clone, cmake, and cl compile in one paste.
+
 ### Step 1 — build hidapi from the auxcorelabs branch (macOS / Linux)
 
 You need `git` and `cmake`. On Linux you also need `libusb-1.0-0-dev` (and
