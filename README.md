@@ -65,9 +65,14 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
 # (same directory that contains the hidapi-upstream/ tree from Step 1).
 curl -LO https://raw.githubusercontent.com/auxcorelabs/hidapi-inputbuffer-sweep-test/main/hidapi_sweep_test.c
 
-# Link against the libusb backend
+# Link against the libusb backend. -Wl,-rpath,'$ORIGIN/...' embeds a
+# relative runpath so the resulting binary finds libhidapi-libusb.so
+# next to the hidapi-upstream/ tree at launch time without needing
+# LD_LIBRARY_PATH. Keep the single quotes — $ORIGIN must reach ld as a
+# literal string, not a shell-expanded empty value.
 gcc -I hidapi-upstream/hidapi -o sweep_input_buffers hidapi_sweep_test.c \
-    hidapi-upstream/build/src/libusb/libhidapi-libusb.so
+    hidapi-upstream/build/src/libusb/libhidapi-libusb.so \
+    -Wl,-rpath,'$ORIGIN/hidapi-upstream/build/src/libusb'
 ```
 
 > If the install hits a `libc6` / `libc-dev-bin` version-mismatch error on a
@@ -159,9 +164,7 @@ Rules:
 Linux usually requires `sudo` (or a udev rule) to open a HID device:
 
 ```sh
-# Linux — libusb backend, auto-detect first HID device
-sudo LD_LIBRARY_PATH=$PWD/hidapi-upstream/build/src/libusb \
-    ./sweep_input_buffers 0 1025
+sudo ./sweep_input_buffers 0 1025
 ```
 
 macOS and Windows do not need elevated privileges for most HID devices:
@@ -175,6 +178,11 @@ macOS and Windows do not need elevated privileges for most HID devices:
 REM Windows
 sweep_input_buffers.exe 0 1025
 ```
+
+All three binaries embed a relative runtime path to their companion hidapi
+library (`$ORIGIN` on Linux, `@loader_path` on macOS, DLL search order on
+Windows), so no `LD_LIBRARY_PATH` / `DYLD_LIBRARY_PATH` is needed — provided
+the binary stays in the working directory that contains `hidapi-upstream/`.
 
 ## Examples
 
